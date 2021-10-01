@@ -39,7 +39,7 @@
     "AssetParameters9fc7dc4e8eee8493baf53645190afe1da43c390796bebf444019793828c4666cS3BucketA454BDCB": {
       "Type": "String",
       "Description": "S3 bucket for asset \"9fc7dc4e8eee8493baf53645190afe1da43c390796bebf444019793828c4666c\"",
-      "Default": "amplify-amplify3-dev-195941-deployment"
+      "Default": "amplify-amplifybackendcms-dev-10054-deployment"
     },
     "AssetParameters9fc7dc4e8eee8493baf53645190afe1da43c390796bebf444019793828c4666cS3VersionKey3A3AA802": {
       "Type": "String",
@@ -134,17 +134,47 @@
                 "",
                 [
                   {
-                    "Ref": "AWS::AccountId"
+                    "Fn::Select": [
+                      4,
+                      {
+                        "Fn::Split": [
+                          ":",
+                          {
+                            "Fn::GetAtt": [
+                              "apiRepository",
+                              "Arn"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   },
                   ".dkr.ecr.",
                   {
-                    "Ref": "AWS::Region"
+                    "Fn::Select": [
+                      3,
+                      {
+                        "Fn::Split": [
+                          ":",
+                          {
+                            "Fn::GetAtt": [
+                              "apiRepository",
+                              "Arn"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   },
                   ".",
                   {
                     "Ref": "AWS::URLSuffix"
                   },
-                  "/amplify-amplify3-dev-195941-api-backend-api:latest"
+                  "/",
+                  {
+                    "Ref": "apiRepository"
+                  },
+                  ":latest"
                 ]
               ]
             },
@@ -177,7 +207,7 @@
             "Arn"
           ]
         },
-        "Family": "amplify-amplify3-dev-195941-backend",
+        "Family": "amplify-amplifybackendcms-dev-10054-backend",
         "Memory": "1024",
         "NetworkMode": "awsvpc",
         "RequiresCompatibilities": [
@@ -221,23 +251,9 @@
               ],
               "Effect": "Allow",
               "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:",
-                    {
-                      "Ref": "AWS::Partition"
-                    },
-                    ":ecr:",
-                    {
-                      "Ref": "AWS::Region"
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId"
-                    },
-                    ":repository/amplify-amplify3-dev-195941-api-backend-api"
-                  ]
+                "Fn::GetAtt": [
+                  "apiRepository",
+                  "Arn"
                 ]
               }
             },
@@ -291,11 +307,22 @@
     "apiContainerLogGroupA9A8D168": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/ecs/amplify-amplify3-dev-195941-backend-api",
+        "LogGroupName": "/ecs/amplify-amplifybackendcms-dev-10054-backend-api",
         "RetentionInDays": 30
       },
       "UpdateReplacePolicy": "Delete",
       "DeletionPolicy": "Delete"
+    },
+    "apiRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "LifecyclePolicy": {
+          "LifecyclePolicyText": "{\"rules\":[{\"rulePriority\":10,\"selection\":{\"tagStatus\":\"tagged\",\"tagPrefixList\":[\"latest\"],\"countType\":\"imageCountMoreThan\",\"countNumber\":1},\"action\":{\"type\":\"expire\"}},{\"rulePriority\":100,\"selection\":{\"tagStatus\":\"any\",\"countType\":\"sinceImagePushed\",\"countNumber\":7,\"countUnit\":\"days\"},\"action\":{\"type\":\"expire\"}}]}"
+        },
+        "RepositoryName": "amplify-amplifybackendcms-dev-10054-api-backend-api"
+      },
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain"
     },
     "ServiceSG": {
       "Type": "AWS::EC2::SecurityGroup",
@@ -329,7 +356,7 @@
         "Cluster": {
           "Ref": "NetworkStackClusterName"
         },
-        "DesiredCount": 1,
+        "DesiredCount": 0,
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
@@ -511,7 +538,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment"
                     ]
                   ]
                 },
@@ -523,7 +550,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment/*"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment/*"
                     ]
                   ]
                 }
@@ -701,7 +728,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment"
                     ]
                   ]
                 },
@@ -713,7 +740,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment/*"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment/*"
                     ]
                   ]
                 }
@@ -793,7 +820,7 @@
                   "Version": "1"
                 },
                 "Configuration": {
-                  "S3Bucket": "amplify-amplify3-dev-195941-deployment",
+                  "S3Bucket": "amplify-amplifybackendcms-dev-10054-deployment",
                   "S3ObjectKey": {
                     "Ref": "ParamZipPath"
                   }
@@ -838,17 +865,47 @@
                         },
                         "\"},{\"name\":\"api_REPOSITORY_URI\",\"type\":\"PLAINTEXT\",\"value\":\"",
                         {
-                          "Ref": "AWS::AccountId"
+                          "Fn::Select": [
+                            4,
+                            {
+                              "Fn::Split": [
+                                ":",
+                                {
+                                  "Fn::GetAtt": [
+                                    "apiRepository",
+                                    "Arn"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
                         },
                         ".dkr.ecr.",
                         {
-                          "Ref": "AWS::Region"
+                          "Fn::Select": [
+                            3,
+                            {
+                              "Fn::Split": [
+                                ":",
+                                {
+                                  "Fn::GetAtt": [
+                                    "apiRepository",
+                                    "Arn"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
                         },
                         ".",
                         {
                           "Ref": "AWS::URLSuffix"
                         },
-                        "/amplify-amplify3-dev-195941-api-backend-api\"}]"
+                        "/",
+                        {
+                          "Ref": "apiRepository"
+                        },
+                        "\"}]"
                       ]
                     ]
                   }
@@ -935,10 +992,10 @@
           }
         ],
         "ArtifactStore": {
-          "Location": "amplify-amplify3-dev-195941-deployment",
+          "Location": "amplify-amplifybackendcms-dev-10054-deployment",
           "Type": "S3"
         },
-        "Name": "amplify-amplify3-dev-195941-backend-service-api-1337"
+        "Name": "amplify-amplifybackendcms-dev-10054-backend-service-api-1337"
       },
       "DependsOn": [
         "ApiPipelinePipelineRoleDefaultPolicyB3AD67CF",
@@ -1002,7 +1059,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment"
                     ]
                   ]
                 },
@@ -1014,7 +1071,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment/",
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment/",
                       {
                         "Ref": "ParamZipPath"
                       }
@@ -1039,7 +1096,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment"
                     ]
                   ]
                 },
@@ -1051,7 +1108,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment/*"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment/*"
                     ]
                   ]
                 }
@@ -1289,7 +1346,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment"
                     ]
                   ]
                 },
@@ -1301,7 +1358,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:::amplify-amplify3-dev-195941-deployment/*"
+                      ":s3:::amplify-amplifybackendcms-dev-10054-deployment/*"
                     ]
                   ]
                 }
@@ -2017,7 +2074,7 @@
             "Arn"
           ]
         },
-        "artifactBucketName": "amplify-amplify3-dev-195941-deployment",
+        "artifactBucketName": "amplify-amplifybackendcms-dev-10054-deployment",
         "artifactKey": {
           "Ref": "ParamZipPath"
         },
@@ -2049,7 +2106,7 @@
             "*"
           ]
         },
-        "Name": "amplify-amplify3-dev-195941-backend",
+        "Name": "amplify-amplifybackendcms-dev-10054-backend",
         "ProtocolType": "HTTP"
       }
     },
@@ -2181,7 +2238,7 @@
       }
     },
     "PipelineName": {
-      "Value": "amplify-amplify3-dev-195941-backend-service-api-1337"
+      "Value": "amplify-amplifybackendcms-dev-10054-backend-service-api-1337"
     },
     "ContainerNames": {
       "Value": "api"
